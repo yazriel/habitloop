@@ -181,6 +181,19 @@
         </receiver>
 
         <receiver
+            android:name=".widgets.MultiStreakWidgetProvider"
+            android:exported="true"
+            android:label="@string/multi_streaks">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_multi_streak_info" />
+        </receiver>
+
+        <receiver
             android:name=".widgets.ScoreWidgetProvider"
             android:exported="true"
             android:label="@string/score">

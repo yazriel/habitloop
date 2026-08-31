@@ -64,4 +64,24 @@ class StreakListTest : BaseUnitTest() {
         assertEquals(1, best.size)
         assertEquals(1, best[0].length)
     }
+
+    @Test
+    fun testGetRecent() {
+        habit.originalEntries.clear()
+        habit.originalEntries.add(Entry(today, Entry.YES_MANUAL))
+        habit.originalEntries.add(Entry(today.minus(1), Entry.YES_MANUAL))
+        habit.originalEntries.add(Entry(today.minus(10), Entry.YES_MANUAL))
+        habit.originalEntries.add(Entry(today.minus(11), Entry.YES_MANUAL))
+        habit.originalEntries.add(Entry(today.minus(20), Entry.YES_MANUAL))
+        habit.originalEntries.add(Entry(today.minus(21), Entry.YES_MANUAL))
+        habit.originalEntries.add(Entry(today.minus(22), Entry.YES_MANUAL))
+        habit.recompute()
+        val recent = streaks.getRecent(5)
+        assertEquals(3, recent.size)
+        assertEquals(today, recent[0].end)
+        assertEquals(today.minus(10), recent[1].end)
+        assertEquals(today.minus(20), recent[2].end)
+        assertEquals(1, streaks.getRecent(1).size)
+        assertEquals(today, streaks.getRecent(1)[0].end)
+    }
 }
