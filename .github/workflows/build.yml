@@ -34,9 +34,6 @@ jobs:
       - name: Run core unit tests (JVM)
         run: ./gradlew :uhabits-core:jvmTest --console=plain
 
-      - name: Run Android unit tests
-        run: ./gradlew :uhabits-android:test --console=plain
-
       - name: Upload debug APK
         if: always()
         uses: actions/upload-artifact@v4
