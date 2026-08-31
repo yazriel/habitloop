@@ -34,6 +34,13 @@ class StreakList {
     }
 
     @Synchronized
+    fun getRecent(limit: Int): List<Streak> {
+        val sorted = ArrayList(list)
+        sorted.sortWith { s1: Streak, s2: Streak -> s2.compareNewer(s1) }
+        return sorted.subList(0, min(sorted.size, limit)).toList()
+    }
+
+    @Synchronized
     fun recompute(
         computedEntries: EntryList,
         from: LocalDate,
