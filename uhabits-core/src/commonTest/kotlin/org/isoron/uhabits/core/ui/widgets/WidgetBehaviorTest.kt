@@ -30,7 +30,9 @@ import org.isoron.uhabits.core.commands.CreateRepetitionCommand
 import org.isoron.uhabits.core.models.Entry
 import org.isoron.uhabits.core.models.Entry.Companion.nextToggleValue
 import org.isoron.uhabits.core.models.Habit
+import org.isoron.uhabits.core.models.NumericalHabitType
 import org.isoron.uhabits.core.preferences.Preferences
+import org.isoron.uhabits.core.ui.CompletionSoundPlayer
 import org.isoron.uhabits.core.ui.NotificationTray
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -39,6 +41,7 @@ import dev.mokkery.verify.VerifyMode.Companion.not as notCalled
 class WidgetBehaviorTest : BaseUnitTest() {
     private lateinit var notificationTray: NotificationTray
     private lateinit var preferences: Preferences
+    private lateinit var completionSoundPlayer: CompletionSoundPlayer
     private lateinit var behavior: WidgetBehavior
     private lateinit var habit: Habit
     private lateinit var today: LocalDate
@@ -51,7 +54,14 @@ class WidgetBehaviorTest : BaseUnitTest() {
         commandRunner = mock()
         notificationTray = mock()
         preferences = mock()
-        behavior = WidgetBehavior(habitList, commandRunner, notificationTray, preferences)
+        completionSoundPlayer = mock()
+        behavior = WidgetBehavior(
+            habitList,
+            commandRunner,
+            notificationTray,
+            preferences,
+            completionSoundPlayer
+        )
         today = getToday()
     }
 
@@ -64,6 +74,7 @@ class WidgetBehaviorTest : BaseUnitTest() {
             )
         }
         verify { notificationTray.cancel(habit) }
+        verify { completionSoundPlayer.play() }
         verify(notCalled) { preferences.isSkipEnabled }
     }
 
@@ -76,6 +87,7 @@ class WidgetBehaviorTest : BaseUnitTest() {
             )
         }
         verify { notificationTray.cancel(habit) }
+        verify(notCalled) { completionSoundPlayer.play() }
         verify(notCalled) { preferences.isSkipEnabled }
     }
 
@@ -108,7 +120,13 @@ class WidgetBehaviorTest : BaseUnitTest() {
                     habit
                 )
             }
-            resetCalls(preferences, commandRunner, notificationTray)
+            if (nextValue == Entry.YES_MANUAL) {
+                verify { completionSoundPlayer.play() }
+            } else {
+                verify(notCalled) { completionSoundPlayer.play() }
+            }
+            resetCalls(preferences, commandRunner, notificationTray, completionSoundPlayer)
+            habit.originalEntries.clear()
         }
     }
 
@@ -124,7 +142,22 @@ class WidgetBehaviorTest : BaseUnitTest() {
             )
         }
         verify { notificationTray.cancel(habit) }
+        verify(notCalled) { completionSoundPlayer.play() }
         verify(notCalled) { preferences.isSkipEnabled }
+    }
+
+    @Test
+    fun testOnIncrementReachingTarget() {
+        habit = fixtures.createNumericalHabit()
+        habit.originalEntries.add(Entry(today, 1900))
+        habit.recompute()
+        behavior.onIncrement(habit, today, 100)
+        verify {
+            commandRunner.run(
+                CreateRepetitionCommand(habitList, habit, today, 2000, "")
+            )
+        }
+        verify { completionSoundPlayer.play() }
     }
 
     @Test
@@ -139,6 +172,23 @@ class WidgetBehaviorTest : BaseUnitTest() {
             )
         }
         verify { notificationTray.cancel(habit) }
+        verify(notCalled) { completionSoundPlayer.play() }
         verify(notCalled) { preferences.isSkipEnabled }
+    }
+
+    @Test
+    fun testOnDecrementReachingTarget() {
+        habit = fixtures.createNumericalHabit()
+        habit.targetType = NumericalHabitType.AT_MOST
+        habit.targetValue = 1.0
+        habit.originalEntries.add(Entry(today, 1100))
+        habit.recompute()
+        behavior.onDecrement(habit, today, 100)
+        verify {
+            commandRunner.run(
+                CreateRepetitionCommand(habitList, habit, today, 1000, "")
+            )
+        }
+        verify { completionSoundPlayer.play() }
     }
 }

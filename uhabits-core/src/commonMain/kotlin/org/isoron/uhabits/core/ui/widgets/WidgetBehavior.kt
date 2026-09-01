@@ -26,7 +26,9 @@ import org.isoron.uhabits.core.models.Entry
 import org.isoron.uhabits.core.models.Entry.Companion.nextToggleValue
 import org.isoron.uhabits.core.models.Habit
 import org.isoron.uhabits.core.models.HabitList
+import org.isoron.uhabits.core.models.NumericalHabitType
 import org.isoron.uhabits.core.preferences.Preferences
+import org.isoron.uhabits.core.ui.CompletionSoundPlayer
 import org.isoron.uhabits.core.ui.NotificationTray
 
 @Inject
@@ -34,12 +36,14 @@ class WidgetBehavior(
     private val habitList: HabitList,
     private val commandRunner: CommandRunner,
     private val notificationTray: NotificationTray,
-    private val preferences: Preferences
+    private val preferences: Preferences,
+    private val completionSoundPlayer: CompletionSoundPlayer
 ) {
     fun onAddRepetition(habit: Habit, date: LocalDate) {
         notificationTray.cancel(habit)
         val entry = habit.originalEntries.get(date)
         setValue(habit, date, Entry.YES_MANUAL, entry.notes)
+        completionSoundPlayer.play()
     }
 
     fun onRemoveRepetition(habit: Habit, date: LocalDate) {
@@ -58,20 +62,33 @@ class WidgetBehavior(
         )
         setValue(habit, date, newValue, entry.notes)
         notificationTray.cancel(habit)
+        if (newValue == Entry.YES_MANUAL) completionSoundPlayer.play()
     }
 
     fun onIncrement(habit: Habit, date: LocalDate, amount: Int) {
         val entry = habit.computedEntries.get(date)
         val currentValue = entry.value
-        setValue(habit, date, currentValue + amount, entry.notes)
+        val newValue = currentValue + amount
+        setValue(habit, date, newValue, entry.notes)
         notificationTray.cancel(habit)
+        if (reachedTarget(habit, newValue)) completionSoundPlayer.play()
     }
 
     fun onDecrement(habit: Habit, date: LocalDate, amount: Int) {
         val entry = habit.computedEntries.get(date)
         val currentValue = entry.value
-        setValue(habit, date, currentValue - amount, entry.notes)
+        val newValue = currentValue - amount
+        setValue(habit, date, newValue, entry.notes)
         notificationTray.cancel(habit)
+        if (reachedTarget(habit, newValue)) completionSoundPlayer.play()
+    }
+
+    private fun reachedTarget(habit: Habit, value: Int): Boolean {
+        if (!habit.isNumerical) return false
+        return when (habit.targetType) {
+            NumericalHabitType.AT_LEAST -> value / 1000.0 >= habit.targetValue
+            NumericalHabitType.AT_MOST -> value / 1000.0 <= habit.targetValue
+        }
     }
 
     fun setValue(habit: Habit, date: LocalDate, newValue: Int, notes: String) {

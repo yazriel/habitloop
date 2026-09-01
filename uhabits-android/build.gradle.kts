@@ -60,6 +60,12 @@ android {
     }
 
     signingConfigs {
+        create("dev") {
+            storeFile = file("../keystores/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
         if (System.getenv("LOOP_KEY_ALIAS") != null) {
             create("release") {
                 keyAlias = System.getenv("LOOP_KEY_ALIAS")
@@ -81,6 +87,7 @@ android {
 
         debug {
             enableUnitTestCoverage = true
+            signingConfig = signingConfigs.getByName("dev")
         }
     }
 

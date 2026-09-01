@@ -35,6 +35,7 @@ import org.isoron.uhabits.core.preferences.Preferences
 import org.isoron.uhabits.core.tasks.ExportCSVTask
 import org.isoron.uhabits.core.tasks.Task
 import org.isoron.uhabits.core.tasks.TaskRunner
+import org.isoron.uhabits.core.ui.CompletionSoundPlayer
 import org.isoron.uhabits.core.ui.callbacks.CheckMarkDialogCallback
 import org.isoron.uhabits.core.ui.callbacks.NumberPickerCallback
 import kotlin.math.roundToInt
@@ -47,7 +48,8 @@ open class ListHabitsBehavior(
     private val screen: Screen,
     private val commandRunner: CommandRunner,
     private val prefs: Preferences,
-    private val bugReporter: BugReporter
+    private val bugReporter: BugReporter,
+    private val completionSoundPlayer: CompletionSoundPlayer
 ) {
     open fun onClickHabit(h: Habit) {
         screen.showHabitScreen(h)
@@ -65,6 +67,7 @@ open class ListHabitsBehavior(
                         (habit.targetType == AT_MOST && newValue <= habit.targetValue)
                     ) {
                         screen.showConfetti(habit.color, x, y)
+                        completionSoundPlayer.play()
                     }
                 }
                 commandRunner.run(CreateRepetitionCommand(habitList, habit, date, value, newNotes))
@@ -75,7 +78,10 @@ open class ListHabitsBehavior(
                 entry.notes,
                 habit.color
             ) { newValue: Int, newNotes: String ->
-                if (newValue != entry.value && newValue == YES_MANUAL) screen.showConfetti(habit.color, x, y)
+                if (newValue != entry.value && newValue == YES_MANUAL) {
+                    screen.showConfetti(habit.color, x, y)
+                    completionSoundPlayer.play()
+                }
                 commandRunner.run(CreateRepetitionCommand(habitList, habit, date, newValue, newNotes))
             }
         }
@@ -136,7 +142,10 @@ open class ListHabitsBehavior(
         commandRunner.run(
             CreateRepetitionCommand(habitList, habit, date, value, notes)
         )
-        if (value == YES_MANUAL) screen.showConfetti(habit.color, x, y)
+        if (value == YES_MANUAL) {
+            screen.showConfetti(habit.color, x, y)
+            completionSoundPlayer.play()
+        }
     }
 
     enum class Message {
