@@ -194,6 +194,19 @@
         </receiver>
 
         <receiver
+            android:name=".widgets.MultiWeeklyWidgetProvider"
+            android:exported="true"
+            android:label="@string/multi_weekly">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_multi_weekly_info" />
+        </receiver>
+
+        <receiver
             android:name=".widgets.ScoreWidgetProvider"
             android:exported="true"
             android:label="@string/score">
