@@ -101,12 +101,13 @@ class MultiHistoryWidget(
         }
 
     private fun buildColoredTitle(): CharSequence {
-        val names = habits.take(4)
-        val spannable = SpannableString(names.joinToString(" · ") { it.name })
+        val names = habits.take(5)
+        val spannable = SpannableString(names.joinToString(" · ") { it.name.take(3) })
         var offset = 0
         for (habit in names) {
+            val name = habit.name.take(3)
             val start = offset
-            val end = start + habit.name.length
+            val end = start + name.length
             spannable.setSpan(
                 ForegroundColorSpan(habit.color.toFixedAndroidColor()),
                 start,

@@ -61,7 +61,7 @@ class MultiStreakWidget(
         val chart = widgetView.dataView as MultiStreakChart
         val merged = habits.flatMap { habit ->
             val color = WidgetTheme().color(habit.color).toInt()
-            habit.streaks.getRecent(5).map { ColoredStreak(color, it) }
+            habit.streaks.getRecent(5).map { ColoredStreak(color, it, habit.name.take(3)) }
         }.sortedWith { a, b -> b.streak.compareNewer(a.streak) }
         if (chart.maxStreakCount > 0) {
             chart.setStreaks(merged.take(chart.maxStreakCount))
