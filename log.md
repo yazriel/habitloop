@@ -366,6 +366,17 @@ A new widget showing each selected habit's check-mark status for the current wee
   only the base date shifts. `MultiWeeklyChart` needed **no change** (it renders all 7 columns from
   its `weekStart` field, which now holds `displayStart`).
 
+### Multi Weekly tweak: size blocks by height (Option A)
+- Previously `blockSize = round((width - 2*padding) / 7.0)` (width-driven) and rows were laid out
+  vertically using that same width-derived size, so with many habits the bottom rows could overflow /
+  clip past the widget height.
+- Now `blockSize = round((height - 2*padding) / (numHabits + 1.2))`, where `1.2` accounts for the
+  weekday header row. This mirrors the Multi-History basis (size from height, always fits vertically),
+  but with a variable row count: total rows = `1.2 + numHabits`, so the header + all habit rows always
+  fit. `headerHeight` stays `blockSize * 1.2`.
+- Consequence: on a very **wide** widget the 7 columns may not fill the full width (height-true squares);
+  no width-filling `min()` was added (as chosen).
+
 ### Commit / branch
 - Committed to `weekly2` (fork dev). `log.md` was **force-added** (`git add -f log.md`, overriding
   the `*.md` gitignore) so it is tracked going forward. Excluded from commit: `weekly.md`,

@@ -63,7 +63,7 @@ class MultiWeeklyChart(
         if (habits.isEmpty()) return
 
         val numHabits = habits.size
-        blockSize = round((width - 2 * padding) / 7.0)
+        blockSize = round((height - 2 * padding) / (numHabits + 1.2))
         val headerHeight = blockSize * 1.2
 
         canvas.setFontSize(min(12.0, blockSize * 0.35))
