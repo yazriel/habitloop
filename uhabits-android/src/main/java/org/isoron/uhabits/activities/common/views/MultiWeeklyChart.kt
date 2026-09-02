@@ -168,8 +168,8 @@ class MultiWeeklyChart : View {
         var k = rect!!.width() / 5
         val size = rect!!.width()
         repeat(3) {
-            canvas.drawLine(left + k, top, left, top + k)
-            canvas.drawLine(right - k, bottom, right, bottom - k)
+            canvas.drawLine(left + k, top, left, top + k, paint!!)
+            canvas.drawLine(right - k, bottom, right, bottom - k, paint!!)
             k += size / 4
         }
         paint!!.style = Paint.Style.FILL
@@ -210,6 +210,5 @@ class MultiWeeklyChart : View {
         val theme = WidgetTheme()
         headerColor = theme.mediumContrastTextColor.toInt()
         borderColor = theme.mediumContrastTextColor.toInt()
-        labelColor = theme.highContrastTextColor.toInt()
     }
 }
