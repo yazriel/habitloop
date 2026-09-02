@@ -352,6 +352,20 @@ A new widget showing each selected habit's check-mark status for the current wee
 - Local partial build: `:uhabits-core:ktlintCheck` + `compileKotlinJvm` green, `:uhabits-android:
   ktlintCheck` green. Full Android build pending GitHub Actions (push to `weekly2`).
 
+### Multi Weekly tweak: shift displayed days when today is early in the week
+- When `today` is the **1st or 2nd day** of the current week (per `prefs.firstWeekday`), the widget
+  table would otherwise be mostly empty (most days in the future). To fix, the **first column
+  displayed** is moved **2 days before** `weekStart`. Example: first day = Mon, today = Tue →
+  widget shows Sat, Sun, Mon, Tue(current), Wed, Thu, Fri.
+- **Implementation**: in `MultiWeeklyWidget.refreshData()`, compute the usual
+  `weekStart = today.startOfWeek(prefs.firstWeekday)`, then derive
+  `displayStart = if (weekStart.daysUntil(today) <= 1) weekStart.minus(2) else weekStart` and use
+  `displayStart` for both the per-column entry lookups and `chart.weekStart`.
+- **Day 3-7**: unchanged (still start at `weekStart`).
+- **Data retrieval is unchanged/simple** — still `habit.computedEntries.get(date).value` per column;
+  only the base date shifts. `MultiWeeklyChart` needed **no change** (it renders all 7 columns from
+  its `weekStart` field, which now holds `displayStart`).
+
 ### Commit / branch
 - Committed to `weekly2` (fork dev). `log.md` was **force-added** (`git add -f log.md`, overriding
   the `*.md` gitignore) so it is tracked going forward. Excluded from commit: `weekly.md`,

@@ -66,9 +66,14 @@ class MultiWeeklyWidget(
         if (preferedBackgroundAlpha >= 255) widgetView.setShadowAlpha(0x4f)
         val today = getToday()
         val weekStart = today.startOfWeek(prefs.firstWeekday)
+        val displayStart = if (weekStart.daysUntil(today) <= 1) {
+            weekStart.minus(2)
+        } else {
+            weekStart
+        }
         val data = habits.map { habit ->
             val entries = (0 until 7).map { offset ->
-                habit.computedEntries.get(weekStart.plus(offset)).value
+                habit.computedEntries.get(displayStart.plus(offset)).value
             }
             MultiWeeklyData(
                 paletteColor = habit.color,
@@ -78,7 +83,7 @@ class MultiWeeklyWidget(
         (widgetView.dataView as AndroidDataView).apply {
             val chart = (this.view as MultiWeeklyChart)
             chart.habits = data
-            chart.weekStart = weekStart
+            chart.weekStart = displayStart
         }
     }
 
