@@ -410,3 +410,14 @@ changes.
 - Local partial build green: `:uhabits-core:ktlintCheck`, `:uhabits-core:compileKotlinJvm`,
   `:uhabits-android:ktlintCheck`. Full Android build (`assembleDebug`) via GitHub Actions on push
   (branch `weekly3`).
+
+### Multi Weekly tweak: center the 7 columns horizontally
+- With height-driven `blockSize` (Option A), on a **wide** widget the 7 columns might not fill the
+  full width, leaving slack on the right (the grid was left-anchored at `padding`).
+- Added a horizontal centering offset in `MultiWeeklyChart.draw()`:
+  `gridWidth = 7*blockSize`, `startX = padding + (width - 2*padding - gridWidth)/2`.
+- `startX` is used for **both** the day-label header columns (`drawHeaders`, `label x`) and the
+  block columns (`drawRow`, block `x`), so labels and blocks stay aligned when centered.
+- Matches the `MultiStreakChart` centering convention (`gap = (internalWidth - barWidth)/2`). When
+  the grid fills the available width, `startX ≈ padding` (unchanged/backward compatible); no clamp
+  needed.

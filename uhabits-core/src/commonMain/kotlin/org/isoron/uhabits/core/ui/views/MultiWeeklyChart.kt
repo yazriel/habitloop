@@ -65,36 +65,38 @@ class MultiWeeklyChart(
         val numHabits = habits.size
         blockSize = round((height - 2 * padding) / (numHabits + 1.2))
         val headerHeight = blockSize * 1.05
+        val gridWidth = 7 * blockSize
+        val startX = padding + (width - 2 * padding - gridWidth) / 2
 
         canvas.setFontSize(min(14.0, height * 0.06))
 
-        drawHeaders(canvas)
+        drawHeaders(canvas, startX)
 
         habits.forEachIndexed { rowIndex, habit ->
-            drawRow(canvas, headerHeight + rowIndex * blockSize, habit)
+            drawRow(canvas, headerHeight + rowIndex * blockSize, startX, habit)
         }
     }
 
-    private fun drawHeaders(canvas: Canvas) {
+    private fun drawHeaders(canvas: Canvas, startX: Double) {
         canvas.setColor(theme.mediumContrastTextColor)
         canvas.setTextAlign(TextAlign.CENTER)
 
         for (i in 0 until 7) {
             val date = weekStart.plus(i)
             val label = dateFormatter.shortWeekdayName(date).take(2).uppercase()
-            val x = padding + i * blockSize + blockSize / 2
+            val x = startX + i * blockSize + blockSize / 2
             canvas.drawText(label, x, blockSize * 0.8)
         }
     }
 
-    private fun drawRow(canvas: Canvas, y: Double, habit: MultiWeeklyData) {
+    private fun drawRow(canvas: Canvas, y: Double, startX: Double, habit: MultiWeeklyData) {
         val color = theme.color(habit.paletteColor.paletteIndex)
         val blockSpacing = blockSize * 0.12
         val blockInner = blockSize - blockSpacing * 2
         val cornerRadius = blockInner * 0.2
 
         for (i in 0 until 7) {
-            val x = padding + i * blockSize + blockSpacing
+            val x = startX + i * blockSize + blockSpacing
             val blockY = y + blockSpacing
             val value = if (i < habit.entries.size) habit.entries[i] else Entry.UNKNOWN
 
