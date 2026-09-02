@@ -47,6 +47,7 @@ import org.isoron.uhabits.activities.habits.list.RESULT_IMPORT_DATA
 import org.isoron.uhabits.activities.habits.list.RESULT_REPAIR_DB
 import org.isoron.uhabits.core.preferences.Preferences
 import org.isoron.uhabits.core.ui.NotificationTray
+import org.isoron.uhabits.notifications.AndroidCompletionSoundPlayer
 import org.isoron.uhabits.notifications.AndroidNotificationTray.Companion.createAndroidNotificationChannel
 import org.isoron.uhabits.notifications.RingtoneManager
 import org.isoron.uhabits.utils.StyledResources
@@ -61,12 +62,18 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
     private lateinit var prefs: Preferences
     private var widgetUpdater: WidgetUpdater? = null
 
+    private var selectedSoundPrefKey: String? = null
+    private var selectedSoundStorageKey: String? = null
+
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             RINGTONE_REQUEST_CODE -> {
-                ringtoneManager!!.update(data)
-                updateRingtoneDescription()
+                val storageKey = selectedSoundStorageKey ?: return
+                val prefKey = selectedSoundPrefKey ?: return
+                selectedSoundPrefKey = null
+                selectedSoundStorageKey = null
+                saveRingtoneSelection(prefKey, storageKey, data)
                 return
             }
             PUBLIC_BACKUP_REQUEST_CODE -> {
@@ -128,6 +135,10 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
                 showRingtonePicker()
                 return true
             }
+            "completionSound" -> {
+                showCompletionSoundPicker()
+                return true
+            }
             "reminderCustomize" -> {
                 createAndroidNotificationChannel(requireContext())
                 val intent = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
@@ -166,7 +177,7 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
         }
         updateWeekdayPreference()
         updatePublicBackupFolderSummary()
-
+        updateSoundDescription("completionSound", AndroidCompletionSoundPlayer.KEY)
         findPreference("reminderSound").isVisible = false
     }
 
@@ -204,7 +215,20 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
     }
 
     private fun showRingtonePicker() {
-        val existingRingtoneUri = ringtoneManager!!.getURI()
+        showSoundPicker("reminderSound", "pref_ringtone_uri", ringtoneManager!!.getURI())
+    }
+
+    private fun showCompletionSoundPicker() {
+        val existingUri = sharedPrefs
+            ?.getString(AndroidCompletionSoundPlayer.KEY, null)
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { Uri.parse(it) }
+        showSoundPicker("completionSound", AndroidCompletionSoundPlayer.KEY, existingUri)
+    }
+
+    private fun showSoundPicker(prefKey: String, storageKey: String, existingUri: Uri?) {
+        selectedSoundPrefKey = prefKey
+        selectedSoundStorageKey = storageKey
         val defaultRingtoneUri = Settings.System.DEFAULT_NOTIFICATION_URI
         val intent = Intent(android.media.RingtoneManager.ACTION_RINGTONE_PICKER)
         intent.putExtra(
@@ -217,17 +241,36 @@ class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeLis
             android.media.RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI,
             defaultRingtoneUri
         )
-        intent.putExtra(
-            android.media.RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
-            existingRingtoneUri
-        )
+        if (existingUri != null) {
+            intent.putExtra(
+                android.media.RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
+                existingUri
+            )
+        }
         startActivityForResult(intent, RINGTONE_REQUEST_CODE)
     }
 
-    private fun updateRingtoneDescription() {
-        val ringtoneName = ringtoneManager!!.getName() ?: return
-        val ringtonePreference = findPreference("reminderSound")
-        ringtonePreference.summary = ringtoneName
+    private fun saveRingtoneSelection(prefKey: String, storageKey: String, data: Intent?) {
+        if (data == null) return
+        val ringtoneUri = data.getParcelableExtra<Uri>(
+            android.media.RingtoneManager.EXTRA_RINGTONE_PICKED_URI
+        )
+        sharedPrefs?.edit()?.putString(storageKey, ringtoneUri?.toString() ?: "")?.apply()
+        updateSoundDescription(prefKey, storageKey)
+    }
+
+    private fun updateSoundDescription(prefKey: String, storageKey: String) {
+        val pref = findPreference(prefKey) ?: return
+        val uriString = sharedPrefs?.getString(storageKey, null)
+        pref.summary = if (uriString.isNullOrEmpty()) {
+            getString(R.string.none)
+        } else {
+            val ringtone = android.media.RingtoneManager.getRingtone(
+                requireContext(),
+                Uri.parse(uriString)
+            )
+            ringtone?.getTitle(requireContext()) ?: uriString
+        }
     }
 
     private fun updatePublicBackupFolderSummary() {

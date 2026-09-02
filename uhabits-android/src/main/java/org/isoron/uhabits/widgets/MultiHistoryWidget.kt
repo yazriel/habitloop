@@ -22,6 +22,9 @@ package org.isoron.uhabits.widgets
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.view.View
 import org.isoron.platform.gui.AndroidDataView
 import org.isoron.platform.time.JavaLocalDateFormatter
@@ -32,6 +35,7 @@ import org.isoron.uhabits.core.ui.screens.habits.show.views.HistoryCardPresenter
 import org.isoron.uhabits.core.ui.views.MultiHistoryChart
 import org.isoron.uhabits.core.ui.views.MultiHistoryData
 import org.isoron.uhabits.core.ui.views.WidgetTheme
+import org.isoron.uhabits.utils.toFixedAndroidColor
 import org.isoron.uhabits.widgets.views.GraphWidgetView
 import java.util.Locale
 
@@ -93,6 +97,24 @@ class MultiHistoryWidget(
                 )
             }
         ).apply {
-            setTitle(habits.take(4).joinToString(" · ") { it.name })
+            setTitle(buildColoredTitle())
         }
+
+    private fun buildColoredTitle(): CharSequence {
+        val names = habits.take(4)
+        val spannable = SpannableString(names.joinToString(" · ") { it.name })
+        var offset = 0
+        for (habit in names) {
+            val start = offset
+            val end = start + habit.name.length
+            spannable.setSpan(
+                ForegroundColorSpan(habit.color.toFixedAndroidColor()),
+                start,
+                end,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            offset = end + 3
+        }
+        return spannable
+    }
 }

@@ -38,6 +38,7 @@ import org.isoron.uhabits.core.preferences.WidgetPreferences
 import org.isoron.uhabits.core.reminders.ReminderScheduler
 import org.isoron.uhabits.core.tasks.CoroutineTaskRunner
 import org.isoron.uhabits.core.tasks.TaskRunner
+import org.isoron.uhabits.core.ui.CompletionSoundPlayer
 import org.isoron.uhabits.core.ui.NotificationTray
 import org.isoron.uhabits.core.ui.screens.habits.list.HabitCardListCache
 import org.isoron.uhabits.core.utils.MidnightTimer
@@ -48,6 +49,7 @@ import org.isoron.uhabits.intents.IntentParser
 import org.isoron.uhabits.intents.IntentScheduler
 import org.isoron.uhabits.intents.PendingIntentFactory
 import org.isoron.uhabits.io.AndroidLogging
+import org.isoron.uhabits.notifications.AndroidCompletionSoundPlayer
 import org.isoron.uhabits.notifications.AndroidNotificationTray
 import org.isoron.uhabits.preferences.SharedPreferencesStorage
 import org.isoron.uhabits.receivers.ReminderController
@@ -63,6 +65,7 @@ abstract class HabitsApplicationComponent(
     @get:Provides val dbFile: File
 ) {
     abstract val commandRunner: CommandRunner
+    abstract val completionSoundPlayer: CompletionSoundPlayer
 
     @get:AppContext
     abstract val context: Context
@@ -114,6 +117,12 @@ abstract class HabitsApplicationComponent(
         screen: AndroidNotificationTray
     ): NotificationTray =
         NotificationTray(taskRunner, commandRunner, preferences, screen)
+
+    @AppScope
+    @Provides
+    open fun completionSoundPlayer(
+        impl: AndroidCompletionSoundPlayer
+    ): CompletionSoundPlayer = impl
 
     @AppScope
     @Provides

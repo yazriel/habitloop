@@ -33,12 +33,15 @@ import org.isoron.uhabits.core.BaseUnitTest
 import org.isoron.uhabits.core.models.Entry
 import org.isoron.uhabits.core.models.Habit
 import org.isoron.uhabits.core.preferences.Preferences
+import org.isoron.uhabits.core.ui.CompletionSoundPlayer
+import org.isoron.uhabits.core.ui.callbacks.CheckMarkDialogCallback
 import org.isoron.uhabits.core.ui.callbacks.NumberPickerCallback
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import dev.mokkery.verify.VerifyMode.Companion.not as notCalled
 
 class ListHabitsBehaviorTest : BaseUnitTest() {
     private val dirFinder: ListHabitsBehavior.DirFinder = mock()
@@ -50,9 +53,11 @@ class ListHabitsBehaviorTest : BaseUnitTest() {
     private lateinit var habit1: Habit
     private lateinit var habit2: Habit
 
-    private var capturedPicker: NumberPickerCallback? = null
+    var capturedPicker: NumberPickerCallback? = null
+    private var capturedCheckmark: CheckMarkDialogCallback? = null
 
     private val bugReporter: ListHabitsBehavior.BugReporter = mock()
+    private val completionSoundPlayer: CompletionSoundPlayer = mock()
 
     @BeforeTest
     override fun setUp() {
@@ -69,7 +74,8 @@ class ListHabitsBehaviorTest : BaseUnitTest() {
             screen,
             commandRunner,
             prefs,
-            bugReporter
+            bugReporter,
+            completionSoundPlayer
         )
     }
 
@@ -172,5 +178,47 @@ class ListHabitsBehaviorTest : BaseUnitTest() {
             y = 0f
         )
         assertFalse(habit1.isCompletedToday())
+        verify(notCalled) { completionSoundPlayer.play() }
+    }
+
+    @Test
+    fun testOnToggleCompleted() {
+        behavior.onToggle(
+            habit = habit1,
+            date = getToday(),
+            value = Entry.YES_MANUAL,
+            notes = "",
+            x = 0f,
+            y = 0f
+        )
+        verify { completionSoundPlayer.play() }
+    }
+
+    @Test
+    fun testOnEditBooleanCompleted() {
+        every {
+            screen.showCheckmarkPopup(any(), any(), any(), any())
+        } calls { args ->
+            capturedCheckmark = args.arg<CheckMarkDialogCallback>(3)
+            Unit
+        }
+        habit1.originalEntries.add(Entry(getToday(), Entry.NO))
+        habit1.recompute()
+        behavior.onEdit(habit1, getToday(), 0f, 0f)
+        capturedCheckmark!!.onNotesSaved(Entry.YES_MANUAL, "")
+        verify { completionSoundPlayer.play() }
+    }
+
+    @Test
+    fun testOnEditNumericalReachingTarget() {
+        every {
+            screen.showNumberPopup(any(), any(), any())
+        } calls { args ->
+            capturedPicker = args.arg<NumberPickerCallback>(2)
+            Unit
+        }
+        behavior.onEdit(habit2, getToday(), 0f, 0f)
+        capturedPicker!!.onNumberPicked(100.0, "")
+        verify { completionSoundPlayer.play() }
     }
 }
