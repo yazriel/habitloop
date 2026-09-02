@@ -411,6 +411,38 @@ changes.
   `:uhabits-android:ktlintCheck`. Full Android build (`assembleDebug`) via GitHub Actions on push
   (branch `weekly3`).
 
+## 9. Session: aggressive day-label font + 1-letter labels + tighter gap
+
+Branch `weekly3`, commits on top of `e643debb`. Applied to `MultiWeeklyChart.kt` only.
+
+### Problem
+Even with `min(14.0, height*0.06)` (matching MultiHistory), weekly day labels still looked smaller
+and the title→label gap was still large. Root cause: **perceptual** — the label font was identical
+in px, but sat in a much larger `blockSize`-scaled header band, making it look small relative to
+surroundings and leaving a big gap under the title.
+
+### Fix 1 — single-letter day labels
+Changed `.take(2).uppercase()` → `.take(1).uppercase()`. Labels are now 1 character each (M, T, W,
+T, F, S, S). Frees horizontal room per column so a bigger font won't collide at small `blockSize`.
+Tradeoff: S/T repeat (two of each per week) but the ordered sequence still reads clearly as a week.
+
+### Fix 2 — aggressive font based on blockSize, higher cap
+Changed `min(14.0, height*0.06)` → `min(17.0, blockSize * 0.55)`. Font now scales with `blockSize`
+(see fix 3 analysis) with a higher cap (17 vs 14). Result: at 1-6 habits, font hits 17px cap,
+which is ≥3.8px larger than the previous 13.2px (history-matched). Scales down only at many habits
+when `blockSize * 0.55 < 17`.
+
+### Fix 3 — tighter header band, label pulled up
+Changed `headerHeight = blockSize * 1.05` → `blockSize * 1.0`, and label baseline from
+`blockSize * 0.8` → `blockSize * 0.7`. The header band shrinks by 5%, and the label sits closer
+to the top of the band (0.7 vs 0.8 × blockSize). Net: reduced empty space above the labels
+(directly addresses the "gap under the colored title" complaint), while leaving a 0.3×blockSize gap
+between the label baseline and the first habit row (comfortable spacing).
+
+### Verification
+- Local partial build green: `:uhabits-core:ktlintCheck`, `:uhabits-core:compileKotlinJvm`,
+  `:uhabits-android:ktlintCheck`.
+
 ### Multi Weekly tweak: center the 7 columns horizontally
 - With height-driven `blockSize` (Option A), on a **wide** widget the 7 columns might not fill the
   full width, leaving slack on the right (the grid was left-anchored at `padding`).

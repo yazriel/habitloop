@@ -64,11 +64,11 @@ class MultiWeeklyChart(
 
         val numHabits = habits.size
         blockSize = round((height - 2 * padding) / (numHabits + 1.2))
-        val headerHeight = blockSize * 1.05
+        val headerHeight = blockSize * 1.0
         val gridWidth = 7 * blockSize
         val startX = padding + (width - 2 * padding - gridWidth) / 2
 
-        canvas.setFontSize(min(14.0, height * 0.06))
+        canvas.setFontSize(min(17.0, blockSize * 0.55))
 
         drawHeaders(canvas, startX)
 
@@ -83,9 +83,9 @@ class MultiWeeklyChart(
 
         for (i in 0 until 7) {
             val date = weekStart.plus(i)
-            val label = dateFormatter.shortWeekdayName(date).take(2).uppercase()
+            val label = dateFormatter.shortWeekdayName(date).take(1).uppercase()
             val x = startX + i * blockSize + blockSize / 2
-            canvas.drawText(label, x, blockSize * 0.8)
+            canvas.drawText(label, x, blockSize * 0.7)
         }
     }
 
