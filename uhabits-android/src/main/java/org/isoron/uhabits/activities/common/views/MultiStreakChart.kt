@@ -37,7 +37,7 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 
-data class ColoredStreak(val color: Int, val streak: Streak)
+data class ColoredStreak(val color: Int, val streak: Streak, val label: String)
 
 class MultiStreakChart : View {
     private var paint: Paint? = null
@@ -119,7 +119,9 @@ class MultiStreakChart : View {
         var availableWidth = internalWidth - 2 * maxLabelWidth
         if (shouldShowLabels) availableWidth -= 2 * textMargin
         var barWidth = percentage * availableWidth
-        val minBarWidth = paint!!.measureText(streak.length.toLong().toString()) + em
+        val minBarWidth = paint!!.measureText(
+            "${streak.length.toLong()} ${coloredStreak.label}"
+        ) + em
         barWidth = max(barWidth, minBarWidth)
         val gap = (internalWidth - barWidth) / 2
         val paddingTopBottom = baseSize * 0.05f
@@ -138,7 +140,7 @@ class MultiStreakChart : View {
         paint!!.color = percentageToTextColor(percentage)
         paint!!.textAlign = Paint.Align.CENTER
         canvas.drawText(
-            streak.length.toLong().toString(),
+            "${streak.length.toLong()} ${coloredStreak.label}",
             rect.centerX(),
             yOffset,
             paint!!

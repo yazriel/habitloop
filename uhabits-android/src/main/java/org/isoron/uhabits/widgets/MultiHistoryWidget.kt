@@ -93,6 +93,6 @@ class MultiHistoryWidget(
                 )
             }
         ).apply {
-            setTitle(habits.take(4).joinToString(" · ") { it.name })
+            setTitle(habits.take(4).joinToString(" · ") { it.name.take(3) })
         }
 }
