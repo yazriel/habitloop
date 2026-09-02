@@ -64,18 +64,18 @@ class MultiWeeklyChart(
 
         val numHabits = habits.size
         blockSize = round((height - 2 * padding) / (numHabits + 1.2))
-        val headerHeight = blockSize * 1.2
+        val headerHeight = blockSize * 1.05
 
-        canvas.setFontSize(min(12.0, blockSize * 0.35))
+        canvas.setFontSize(min(14.0, height * 0.06))
 
-        drawHeaders(canvas, headerHeight)
+        drawHeaders(canvas)
 
         habits.forEachIndexed { rowIndex, habit ->
             drawRow(canvas, headerHeight + rowIndex * blockSize, habit)
         }
     }
 
-    private fun drawHeaders(canvas: Canvas, headerY: Double) {
+    private fun drawHeaders(canvas: Canvas) {
         canvas.setColor(theme.mediumContrastTextColor)
         canvas.setTextAlign(TextAlign.CENTER)
 
@@ -83,7 +83,7 @@ class MultiWeeklyChart(
             val date = weekStart.plus(i)
             val label = dateFormatter.shortWeekdayName(date).take(2).uppercase()
             val x = padding + i * blockSize + blockSize / 2
-            canvas.drawText(label, x, headerY - blockSize * 0.15)
+            canvas.drawText(label, x, blockSize * 0.8)
         }
     }
 

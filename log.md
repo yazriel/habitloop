@@ -381,3 +381,32 @@ A new widget showing each selected habit's check-mark status for the current wee
 - Committed to `weekly2` (fork dev). `log.md` was **force-added** (`git add -f log.md`, overriding
   the `*.md` gitignore) so it is tracked going forward. Excluded from commit: `weekly.md`,
   `AGENTS.md` (gitignored), `nohup.out` (untracked build log), and build artifacts.
+
+## 8. Session: Weekly3 — day-label size parity + tighten title gap
+
+Branch **`weekly3`** created from `weekly2`. Two cosmetic fixes applied to
+`uhabits-core/src/commonMain/.../views/MultiWeeklyChart.kt` only; no widget/provider/manifest
+changes.
+
+### Fix 1 — day-label font size matches the History widget
+- Old: `canvas.setFontSize(min(12.0, blockSize * 0.35))` (cap 12px, sized from `blockSize`).
+- New: `canvas.setFontSize(min(14.0, height * 0.06))` (cap 14px, sized from `height`) — identical to
+  `HistoryChart.draw()` line 108. The weekly grey day labels now render at the same size as the
+  History widget's grey labels. Root cause of the visual difference: weekly used a 12px cap based on
+  `blockSize`, history used a 14px cap based on `height`.
+
+### Fix 2 — reduce the vertical gap between the colored title and the day labels
+- Root cause: the chart reserved a full `1.2 * blockSize` header band and placed the day-label
+  baseline at `headerY - 0.15*blockSize = 1.05*blockSize` (near the **bottom** of the band), leaving
+  ≈ one `blockSize` of dead space at the top of the chart (exaggerated when few habits make
+  `blockSize` large).
+- New: day-label baseline drawn at `blockSize * 0.8` (tight under the title); header band reduced
+  from `1.2*blockSize` to `1.05*blockSize` (first habit row still begins at `headerHeight`). The
+  unused `headerY` parameter on `drawHeaders()` was removed (only `blockSize` is used now).
+- Net: ≈ `0.25*blockSize` gap between the label baseline and the first block row, dead band above
+  removed — matching the History chart's tight header.
+
+### Verification
+- Local partial build green: `:uhabits-core:ktlintCheck`, `:uhabits-core:compileKotlinJvm`,
+  `:uhabits-android:ktlintCheck`. Full Android build (`assembleDebug`) via GitHub Actions on push
+  (branch `weekly3`).
