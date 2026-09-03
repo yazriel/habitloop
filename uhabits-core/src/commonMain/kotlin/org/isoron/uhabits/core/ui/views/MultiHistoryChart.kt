@@ -124,7 +124,7 @@ class MultiHistoryChart(
             val date = topLeftDate.plus(row)
             canvas.setTextAlign(TextAlign.LEFT)
             canvas.drawText(
-                dateFormatter.shortWeekdayName(date),
+                dateFormatter.shortWeekdayName(date).take(2).uppercase(),
                 padding + nColumns * squareSize + squareSize * 0.15,
                 padding + squareSize * (row + 1) + squareSize / 2
             )

@@ -31,15 +31,14 @@ import org.isoron.platform.time.JavaLocalDateFormatter
 import org.isoron.platform.time.getToday
 import org.isoron.uhabits.activities.habits.list.ListHabitsActivity
 import org.isoron.uhabits.core.models.Habit
-import org.isoron.uhabits.core.ui.screens.habits.show.views.HistoryCardPresenter
-import org.isoron.uhabits.core.ui.views.MultiHistoryChart
-import org.isoron.uhabits.core.ui.views.MultiHistoryData
+import org.isoron.uhabits.core.ui.views.MultiWeeklyChart
+import org.isoron.uhabits.core.ui.views.MultiWeeklyData
 import org.isoron.uhabits.core.ui.views.WidgetTheme
 import org.isoron.uhabits.utils.toFixedAndroidColor
 import org.isoron.uhabits.widgets.views.GraphWidgetView
 import java.util.Locale
 
-class MultiHistoryWidget(
+class MultiWeeklyWidget(
     context: Context,
     id: Int,
     private val habits: List<Habit>,
@@ -65,21 +64,26 @@ class MultiHistoryWidget(
         val widgetView = view as GraphWidgetView
         widgetView.setBackgroundAlpha(preferedBackgroundAlpha)
         if (preferedBackgroundAlpha >= 255) widgetView.setShadowAlpha(0x4f)
+        val today = getToday()
+        val weekStart = today.startOfWeek(prefs.firstWeekday)
+        val displayStart = if (weekStart.daysUntil(today) <= 1) {
+            weekStart.minus(2)
+        } else {
+            weekStart
+        }
         val data = habits.map { habit ->
-            val state = HistoryCardPresenter.buildState(
-                habit = habit,
-                firstWeekday = prefs.firstWeekday,
-                theme = WidgetTheme()
-            )
-            MultiHistoryData(
-                paletteColor = state.color,
-                series = state.series,
-                defaultSquare = state.defaultSquare
+            val entries = (0 until 7).map { offset ->
+                habit.computedEntries.get(displayStart.plus(offset)).value
+            }
+            MultiWeeklyData(
+                paletteColor = habit.color,
+                entries = entries
             )
         }
         (widgetView.dataView as AndroidDataView).apply {
-            val chart = (this.view as MultiHistoryChart)
+            val chart = (this.view as MultiWeeklyChart)
             chart.habits = data
+            chart.weekStart = displayStart
         }
     }
 
@@ -87,12 +91,13 @@ class MultiHistoryWidget(
         GraphWidgetView(
             context,
             AndroidDataView(context).apply {
-                view = MultiHistoryChart(
+                view = MultiWeeklyChart(
                     today = getToday(),
                     habits = listOf(),
                     theme = WidgetTheme(),
                     dateFormatter = JavaLocalDateFormatter(Locale.getDefault()),
                     firstWeekday = prefs.firstWeekday,
+                    weekStart = getToday().startOfWeek(prefs.firstWeekday),
                     padding = 2.5
                 )
             }
