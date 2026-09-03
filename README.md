@@ -6,7 +6,7 @@ MultiHistory, MultiStreak and Weekly widgets.
 
 <p></p>
 
-[![Multi screen][screenmulti]][screenmulti]
+[![Multi Habit][screen7th]][screen7]
 
 <p></p>
 <p></p>
@@ -113,19 +113,20 @@ contribute, even if you are not a software developer.
   You should have received a copy of the GNU General Public License along
   with this program. If not, see <https://www.gnu.org/licenses/>.
 
-[screenmulti]: screenshots/screenmulti.png
 [screen1]: screenshots/1.png
 [screen2]: screenshots/2.png
 [screen3]: screenshots/3.png
 [screen4]: screenshots/4.png
 [screen5]: screenshots/5.png
 [screen6]: screenshots/6.png
+[screen7]: screenshots/7.png
 [screen1th]: screenshots/1.thumb.png
 [screen2th]: screenshots/2.thumb.png
 [screen3th]: screenshots/3.thumb.png
 [screen4th]: screenshots/4.thumb.png
 [screen5th]: screenshots/5.thumb.png
 [screen6th]: screenshots/6.thumb.png
+[screen7th]: screenshots/7.thumb.png
 [poedit]: https://translate.loophabits.org
 [playstore]: https://play.google.com/store/apps/details?id=org.isoron.uhabits
 [releases]: https://github.com/iSoron/uhabits/releases
