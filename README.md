@@ -1,3 +1,17 @@
+<h1 align="center">Forked and added Multi Habit widgets</h1>
+<p>
+</p>
+
+MultiHistory, MultiStreak and Weekly widgets. 
+
+<p></p>
+
+[![Multi screen][screenmulti]][screenmulti]
+
+<p></p>
+<p></p>
+
+
 <h1 align="center">Loop Habit Tracker</h1>
 <p align="center">
   <a href="https://github.com/iSoron/uhabits/releases/latest">
@@ -99,6 +113,7 @@ contribute, even if you are not a software developer.
   You should have received a copy of the GNU General Public License along
   with this program. If not, see <https://www.gnu.org/licenses/>.
 
+[screenmulti]: screenshots/screenmulti.png
 [screen1]: screenshots/1.png
 [screen2]: screenshots/2.png
 [screen3]: screenshots/3.png
