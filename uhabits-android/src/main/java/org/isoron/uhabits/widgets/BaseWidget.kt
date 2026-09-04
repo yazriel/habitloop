@@ -35,7 +35,7 @@ import org.isoron.uhabits.intents.PendingIntentFactory
 import kotlin.math.max
 
 abstract class BaseWidget(val context: Context, val id: Int, val stacked: Boolean) {
-    private val widgetPrefs: WidgetPreferences
+    protected val widgetPrefs: WidgetPreferences
     protected val prefs: Preferences
     protected val pendingIntentFactory: PendingIntentFactory
     protected val commandRunner: CommandRunner

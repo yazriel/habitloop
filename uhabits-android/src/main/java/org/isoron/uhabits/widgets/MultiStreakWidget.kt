@@ -72,6 +72,12 @@ class MultiStreakWidget(
 
     override fun buildView() =
         GraphWidgetView(context, MultiStreakChart(context)).apply {
-            setTitle(context.getString(R.string.multi_streaks_title))
+            setTitle(
+                if (widgetPrefs.getShowTitleFromWidgetId(id)) {
+                    context.getString(R.string.multi_streaks_title)
+                } else {
+                    null
+                }
+            )
         }
 }

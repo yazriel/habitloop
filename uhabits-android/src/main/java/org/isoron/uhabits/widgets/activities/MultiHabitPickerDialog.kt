@@ -26,6 +26,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.ListView
 import android.widget.TextView
 import org.isoron.uhabits.HabitsApplication
@@ -66,6 +67,8 @@ class MultiHabitPickerDialog : Activity() {
         setContentView(R.layout.widget_multi_history_configure_activity)
         val listView = findViewById<ListView>(R.id.listView)
         val saveButton = findViewById<Button>(R.id.buttonSave)
+        val titleCheckBox = findViewById<CheckBox>(R.id.checkBoxTitle)
+        titleCheckBox.isChecked = widgetPreferences.getShowTitleFromWidgetId(widgetId)
 
         with(listView) {
             choiceMode = ListView.CHOICE_MODE_MULTIPLE
@@ -90,6 +93,10 @@ class MultiHabitPickerDialog : Activity() {
 
     fun confirm(selectedIds: List<Long>) {
         widgetPreferences.addWidget(widgetId, selectedIds.toLongArray())
+        widgetPreferences.setShowTitle(
+            widgetId,
+            findViewById<CheckBox>(R.id.checkBoxTitle).isChecked
+        )
         widgetUpdater.updateWidgets()
         setResult(
             RESULT_OK,

@@ -121,8 +121,10 @@
     <string name="checkmark">Checkmark</string>
     <string name="multi_history">Multi History</string>
     <string name="multi_streaks">Multi Streaks</string>
-    <string name="multi_streaks_title">Streaks(es)</string>
+    <string name="multi_streaks_title">MultiStreaks</string>
     <string name="multi_weekly">Multi Weekly</string>
+    <string name="multi_title">Multi Title</string>
+    <string name="multi_widget_show_title">Title</string>
     <string name="checkmark_stack_widget" formatted="false">Checkmark Stack Widget</string>
     <string name="frequency_stack_widget" formatted="false">Frequency Stack Widget</string>
     <string name="score_stack_widget" formatted="false">Score Stack Widget</string>
