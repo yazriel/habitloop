@@ -453,3 +453,19 @@ between the label baseline and the first habit row (comfortable spacing).
 - Matches the `MultiStreakChart` centering convention (`gap = (internalWidth - barWidth)/2`). When
   the grid fills the available width, `startX ≈ padding` (unchanged/backward compatible); no clamp
   needed.
+
+## 10. Session: Title toggle + Multi Title widget
+
+Branch `untitle` (based on weekly3).
+
+- Added a "Title" checkbox to the multi-habit widget picker. Unchecking it hides the widget
+  title, so the history/streak/weekly chart uses the freed-up space. Setting is per widget and
+  remembered.
+- New "Multi Title" home-screen widget: shows only the colored title made up of the selected
+  habits, using the same picker and title styling as the other multi widgets.
+- MultiStreaks widget title renamed to "MultiStreaks".
+- All multi widget titles now use 5 letters per habit (was 3).
+
+### Verification
+- Full Android build compiles and works on-device. GitHub Actions ktlint check passed after
+  fixing missing trailing newlines in the new files.
