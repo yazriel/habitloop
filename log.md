@@ -469,3 +469,46 @@ Branch `untitle` (based on weekly3).
 ### Verification
 - Full Android build compiles and works on-device. GitHub Actions ktlint check passed after
   fixing missing trailing newlines in the new files.
+
+## 11. Session: Multi-History 5th center quadrant + MultiStreaks title
+
+### MultiStreaks title -> Streaks2
+- Home-screen title only: `uhabits-android/.../res/values/strings.xml`
+  `<string name="multi_streaks_title">Streaks(es)</string>` -> `Streaks2`.
+- Picker name untouched: `@string/multi_streaks` = "Multi Streaks" (`AndroidManifest.xml`).
+- `MultiStreakWidget.buildView()` already reads `R.string.multi_streaks_title`, no Kotlin change.
+
+### Multi-History 5th quadrant (pyramid viewed from above)
+- Each day square keeps its 2x2 grid for habits 1-4, plus habit 5 as a same-size
+  square centered on top: `fillRoundRect(x + halfWidth/2, y + halfHeight/2,
+  halfWidth, halfHeight)`, overlapping each quadrant by a quarter.
+- Same ON (`full color`) / DIMMED+HATCHED (`blend 50%`) / else (`lowContrast`)
+  rule, including diagonal hatch for HATCHED. Drawn after the 4 quadrants, before
+  the centered day-number text (text stays legible on top).
+- Refactor: extracted `drawQuadrant(canvas, qx, qy, qw, qh, habit, offset)` in
+  `uhabits-core/.../views/MultiHistoryChart.kt`; `drawSquare()` calls it 4x +
+  1x via `habits.getOrNull(4)`. <5 habits = no-op; >5 ignored (title already
+  caps at `take(5)` in `MultiHistoryWidget.buildColoredTitle()`).
+- No `Canvas` API change: square uses existing `fillRoundRect` (no polygon primitive).
+
+## 12. Session: MultiStreak bars invisible for short streaks
+
+### Diagnosis (inherited behaviour, amplified)
+- Both `StreakChart.drawRow()` (original) and `MultiStreakChart.drawRow()` (fork)
+  always draw a bar + centered number per row. No missing-bar bug.
+- "Just a number" = grey `contrast20` bar: `percentageToColor()` returns neutral
+  grey when `length/maxLength < 0.5`. Grey `minBarWidth` pill on card background
+  looks bar-less.
+- Amplified in multi: `MultiStreakWidget.refreshData()` merges `getRecent(5)` per
+  habit, `maxLength` is the global longest. Short streaks (e.g. 3 vs 30 = 0.1)
+  always grey. Single-habit widget normalizes within one habit so its top row is
+  always full color.
+- `length=1` edge identical in original: `barWidth = max(pct*width, minBarWidth)`
+  still draws a min-width pill, but grey when under threshold.
+
+### Fix (MultiStreakChart only, original untouched)
+- `uhabits-android/.../views/MultiStreakChart.kt`: grey cutoff `0.5f` -> `0.25f`
+  in both `percentageToColor()` (bands: 1.0 full, 0.8 a192, 0.25 a96, else grey)
+  and `percentageToTextColor()` (light text down to 0.25 to match tinted bars).
+- Width logic untouched: bar widths stay globally comparable (`length/maxLength`).
+- Residual: `length=1` with global max >4 still grey (same as original edge).
