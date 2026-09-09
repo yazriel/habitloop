@@ -207,6 +207,19 @@
         </receiver>
 
         <receiver
+            android:name=".widgets.MultiTitleWidgetProvider"
+            android:exported="true"
+            android:label="@string/multi_title">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_multi_title_info" />
+        </receiver>
+
+        <receiver
             android:name=".widgets.ScoreWidgetProvider"
             android:exported="true"
             android:label="@string/score">

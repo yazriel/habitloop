@@ -22,9 +22,6 @@ package org.isoron.uhabits.widgets
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.view.View
 import org.isoron.platform.gui.AndroidDataView
 import org.isoron.platform.time.JavaLocalDateFormatter
@@ -34,7 +31,6 @@ import org.isoron.uhabits.core.models.Habit
 import org.isoron.uhabits.core.ui.views.MultiWeeklyChart
 import org.isoron.uhabits.core.ui.views.MultiWeeklyData
 import org.isoron.uhabits.core.ui.views.WidgetTheme
-import org.isoron.uhabits.utils.toFixedAndroidColor
 import org.isoron.uhabits.widgets.views.GraphWidgetView
 import java.util.Locale
 
@@ -102,25 +98,9 @@ class MultiWeeklyWidget(
                 )
             }
         ).apply {
-            setTitle(buildColoredTitle())
+            setTitle(if (showTitle) buildColoredTitle(habits) else null)
         }
 
-    private fun buildColoredTitle(): CharSequence {
-        val names = habits.take(5)
-        val spannable = SpannableString(names.joinToString(" · ") { it.name.take(3) })
-        var offset = 0
-        for (habit in names) {
-            val name = habit.name.take(3)
-            val start = offset
-            val end = start + name.length
-            spannable.setSpan(
-                ForegroundColorSpan(habit.color.toFixedAndroidColor()),
-                start,
-                end,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-            offset = end + 3
-        }
-        return spannable
-    }
+    private val showTitle: Boolean
+        get() = widgetPrefs.getShowTitleFromWidgetId(id)
 }

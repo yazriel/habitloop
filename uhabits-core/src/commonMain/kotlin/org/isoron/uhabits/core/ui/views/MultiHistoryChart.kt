@@ -202,41 +202,29 @@ class MultiHistoryChart(
         )
 
         habits.take(4).forEachIndexed { index, habit ->
-            val offsetX = quadrantOffsets[index][0]
-            val offsetY = quadrantOffsets[index][1]
-            val value = if (offset >= habit.series.size) habit.defaultSquare else habit.series[offset]
-            val color = theme.color(habit.paletteColor.paletteIndex)
-            val squareColor = when (value) {
-                HistoryChart.Square.ON -> color
-                HistoryChart.Square.DIMMED, HistoryChart.Square.HATCHED ->
-                    color.blendWith(theme.cardBackgroundColor, 0.5)
-                else -> theme.lowContrastTextColor
-            }
-            canvas.setColor(squareColor)
-            canvas.fillRoundRect(
-                x + offsetX,
-                y + offsetY,
+            drawQuadrant(
+                canvas,
+                x + quadrantOffsets[index][0],
+                y + quadrantOffsets[index][1],
                 halfWidth,
                 halfHeight,
-                min(halfWidth, halfHeight) * 0.3
+                habit,
+                offset
             )
+        }
 
-            if (value == HistoryChart.Square.HATCHED) {
-                canvas.setStrokeWidth(0.5)
-                canvas.setColor(theme.cardBackgroundColor)
-                var k = halfWidth / 5
-                val size = min(halfWidth, halfHeight)
-                repeat(3) {
-                    canvas.drawLine(x + offsetX + k, y + offsetY, x + offsetX, y + offsetY + k)
-                    canvas.drawLine(
-                        x + offsetX + halfWidth - k,
-                        y + offsetY + halfHeight,
-                        x + offsetX + halfWidth,
-                        y + offsetY + halfHeight - k
-                    )
-                    k += size / 4
-                }
-            }
+        // 5th habit: same-size square centered on top (pyramid viewed from above),
+        // overlapping each of the 4 quadrants by a quarter.
+        habits.getOrNull(4)?.let { fifth ->
+            drawQuadrant(
+                canvas,
+                x + halfWidth / 2,
+                y + halfHeight / 2,
+                halfWidth,
+                halfHeight,
+                fifth,
+                offset
+            )
         }
 
         val textColor = if (theme.cardBackgroundColor == Color.TRANSPARENT) {
@@ -247,5 +235,38 @@ class MultiHistoryChart(
         canvas.setColor(textColor)
         canvas.setTextAlign(TextAlign.CENTER)
         canvas.drawText(date.day.toString(), x + width / 2, y + height / 2)
+    }
+
+    private fun drawQuadrant(
+        canvas: Canvas,
+        qx: Double,
+        qy: Double,
+        qw: Double,
+        qh: Double,
+        habit: MultiHistoryData,
+        offset: Int
+    ) {
+        val value = if (offset >= habit.series.size) habit.defaultSquare else habit.series[offset]
+        val color = theme.color(habit.paletteColor.paletteIndex)
+        val squareColor = when (value) {
+            HistoryChart.Square.ON -> color
+            HistoryChart.Square.DIMMED, HistoryChart.Square.HATCHED ->
+                color.blendWith(theme.cardBackgroundColor, 0.5)
+            else -> theme.lowContrastTextColor
+        }
+        canvas.setColor(squareColor)
+        canvas.fillRoundRect(qx, qy, qw, qh, min(qw, qh) * 0.3)
+
+        if (value == HistoryChart.Square.HATCHED) {
+            canvas.setStrokeWidth(0.5)
+            canvas.setColor(theme.cardBackgroundColor)
+            var k = qw / 5
+            val size = min(qw, qh)
+            repeat(3) {
+                canvas.drawLine(qx + k, qy, qx, qy + k)
+                canvas.drawLine(qx + qw - k, qy + qh, qx + qw, qy + qh - k)
+                k += size / 4
+            }
+        }
     }
 }

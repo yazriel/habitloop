@@ -89,6 +89,7 @@ class WidgetUpdater(
             updateWidgets(modifiedHabitId, MultiHistoryWidgetProvider::class.java)
             updateWidgets(modifiedHabitId, MultiStreakWidgetProvider::class.java)
             updateWidgets(modifiedHabitId, MultiWeeklyWidgetProvider::class.java)
+            updateWidgets(modifiedHabitId, MultiTitleWidgetProvider::class.java)
         }
     }
 

@@ -16,26 +16,17 @@
  * You should have received a copy of the GNU General Public License along
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.isoron.uhabits.widgets
 
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.view.View
-import org.isoron.platform.gui.AndroidDataView
-import org.isoron.platform.time.JavaLocalDateFormatter
-import org.isoron.platform.time.getToday
 import org.isoron.uhabits.activities.habits.list.ListHabitsActivity
 import org.isoron.uhabits.core.models.Habit
-import org.isoron.uhabits.core.ui.screens.habits.show.views.HistoryCardPresenter
-import org.isoron.uhabits.core.ui.views.MultiHistoryChart
-import org.isoron.uhabits.core.ui.views.MultiHistoryData
-import org.isoron.uhabits.core.ui.views.WidgetTheme
-import org.isoron.uhabits.widgets.views.GraphWidgetView
-import java.util.Locale
+import org.isoron.uhabits.widgets.views.MultiTitleWidgetView
 
-class MultiHistoryWidget(
+class MultiTitleWidget(
     context: Context,
     id: Int,
     private val habits: List<Habit>,
@@ -58,44 +49,13 @@ class MultiHistoryWidget(
     }
 
     override fun refreshData(view: View) {
-        val widgetView = view as GraphWidgetView
+        val widgetView = view as MultiTitleWidgetView
         widgetView.setBackgroundAlpha(preferedBackgroundAlpha)
         if (preferedBackgroundAlpha >= 255) widgetView.setShadowAlpha(0x4f)
-        val data = habits.map { habit ->
-            val state = HistoryCardPresenter.buildState(
-                habit = habit,
-                firstWeekday = prefs.firstWeekday,
-                theme = WidgetTheme()
-            )
-            MultiHistoryData(
-                paletteColor = state.color,
-                series = state.series,
-                defaultSquare = state.defaultSquare
-            )
-        }
-        (widgetView.dataView as AndroidDataView).apply {
-            val chart = (this.view as MultiHistoryChart)
-            chart.habits = data
-        }
     }
 
     override fun buildView() =
-        GraphWidgetView(
-            context,
-            AndroidDataView(context).apply {
-                view = MultiHistoryChart(
-                    today = getToday(),
-                    habits = listOf(),
-                    theme = WidgetTheme(),
-                    dateFormatter = JavaLocalDateFormatter(Locale.getDefault()),
-                    firstWeekday = prefs.firstWeekday,
-                    padding = 2.5
-                )
-            }
-        ).apply {
-            setTitle(if (showTitle) buildColoredTitle(habits) else null)
+        MultiTitleWidgetView(context).apply {
+            setTitle(buildColoredTitle(habits))
         }
-
-    private val showTitle: Boolean
-        get() = widgetPrefs.getShowTitleFromWidgetId(id)
 }

@@ -29,6 +29,14 @@ open class WidgetPreferences(private val storage: Preferences.Storage) {
         storage.putLongArray(getHabitIdKey(widgetId), habitIds)
     }
 
+    open fun setShowTitle(widgetId: Int, showTitle: Boolean) {
+        storage.putBoolean(getShowTitleKey(widgetId), showTitle)
+    }
+
+    open fun getShowTitleFromWidgetId(widgetId: Int): Boolean {
+        return storage.getBoolean(getShowTitleKey(widgetId), true)
+    }
+
     open fun getHabitIdsFromWidgetId(widgetId: Int): LongArray {
         val habitIdKey = getHabitIdKey(widgetId)
         return try {
@@ -46,6 +54,7 @@ open class WidgetPreferences(private val storage: Preferences.Storage) {
     open fun removeWidget(id: Int) {
         val habitIdKey = getHabitIdKey(id)
         storage.remove(habitIdKey)
+        storage.remove(getShowTitleKey(id))
     }
 
     open fun getSnoozeTime(id: Long): Long {
@@ -54,6 +63,10 @@ open class WidgetPreferences(private val storage: Preferences.Storage) {
 
     private fun getHabitIdKey(id: Int): String {
         return format("widget-%06d-habit", id)
+    }
+
+    private fun getShowTitleKey(id: Int): String {
+        return format("widget-%06d-title", id)
     }
 
     private fun getSnoozeKey(id: Long): String {

@@ -183,7 +183,7 @@ class MultiStreakChart : View {
         if (percentage >= 0.8f) {
             return Color.argb(192, Color.red(color), Color.green(color), Color.blue(color))
         }
-        return if (percentage >= 0.5f) {
+        return if (percentage >= 0.25f) {
             Color.argb(96, Color.red(color), Color.green(color), Color.blue(color))
         } else {
             StyledResources(context).getColor(R.attr.contrast20)
@@ -191,7 +191,7 @@ class MultiStreakChart : View {
     }
 
     private fun percentageToTextColor(percentage: Float): Int {
-        return if (percentage >= 0.5f) textColors[2] else textColors[1]
+        return if (percentage >= 0.25f) textColors[2] else textColors[1]
     }
 
     private fun updateMaxMinLengths() {
