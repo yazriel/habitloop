@@ -512,3 +512,23 @@ Branch `untitle` (based on weekly3).
   and `percentageToTextColor()` (light text down to 0.25 to match tinted bars).
 - Width logic untouched: bar widths stay globally comparable (`length/maxLength`).
 - Residual: `length=1` with global max >4 still grey (same as original edge).
+
+## 13. Session: per-habit shading in MultiStreak widget
+
+Now the full/shaded/grey tint is computed against each habit's own longest
+streak (among the rows drawn), not the global max. Bar widths are unchanged
+(globally comparable).
+
+### Change
+- `ColoredStreak` now carries a `habitKey` (the `Habit.id`); color alone can't
+  identify a habit since two habits may share a color.
+- `updateMaxMinLengths()` builds `maxLengthByHabit: Map<habitKey, max>` over the
+  rows actually passed to `setStreaks()` (post-`maxStreakCount` truncation).
+- `drawRow()`: `widthPercentage = length / global maxLength` still sizes the bar;
+  `shadePercentage = length / habit's own max` drives `percentageToColor()` and
+  `percentageToTextColor()` (same 1.0 / 0.8 / 0.25 / grey bands). Habits with no
+  rows or max 0 fall back to the global percentage.
+- Example: habit A {30, 3} -> 30 full, 3 grey + short bar; habit B {2, 1} -> 2
+  FULL color but short-width bar, 1 shaded.
+- `MultiStreakWidget.refreshData()` passes `habit.id ?: 0L` as the key.
+- Original `StreakChart.kt` untouched (single-habit already normalizes per habit).

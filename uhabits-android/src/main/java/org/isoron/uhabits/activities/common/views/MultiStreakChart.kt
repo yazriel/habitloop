@@ -37,12 +37,13 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 
-data class ColoredStreak(val color: Int, val streak: Streak)
+data class ColoredStreak(val color: Int, val streak: Streak, val habitKey: Long)
 
 class MultiStreakChart : View {
     private var paint: Paint? = null
     private var minLength: Long = 0
     private var maxLength: Long = 0
+    private var maxLengthByHabit: Map<Long, Long> = emptyMap()
     private lateinit var textColors: IntArray
     private var rect: RectF? = null
     private var baseSize = 0
@@ -115,15 +116,22 @@ class MultiStreakChart : View {
     private fun drawRow(canvas: Canvas, coloredStreak: ColoredStreak, rect: RectF?) {
         if (maxLength == 0L) return
         val streak = coloredStreak.streak
-        val percentage = streak.length.toFloat() / maxLength
+        val widthPercentage = streak.length.toFloat() / maxLength
         var availableWidth = internalWidth - 2 * maxLabelWidth
         if (shouldShowLabels) availableWidth -= 2 * textMargin
-        var barWidth = percentage * availableWidth
+        var barWidth = widthPercentage * availableWidth
         val minBarWidth = paint!!.measureText(streak.length.toLong().toString()) + em
         barWidth = max(barWidth, minBarWidth)
         val gap = (internalWidth - barWidth) / 2
         val paddingTopBottom = baseSize * 0.05f
-        paint!!.color = percentageToColor(percentage, coloredStreak.color)
+        val habitMax = maxLengthByHabit[coloredStreak.habitKey]
+        val shadePercentage =
+            if (habitMax != null && habitMax > 0) {
+                streak.length.toFloat() / habitMax
+            } else {
+                widthPercentage
+            }
+        paint!!.color = percentageToColor(shadePercentage, coloredStreak.color)
         val round = dpToPixels(context, 2f)
         canvas.drawRoundRect(
             rect!!.left + gap,
@@ -135,7 +143,7 @@ class MultiStreakChart : View {
             paint!!
         )
         val yOffset = rect.centerY() + 0.3f * em
-        paint!!.color = percentageToTextColor(percentage)
+        paint!!.color = percentageToTextColor(shadePercentage)
         paint!!.textAlign = Paint.Align.CENTER
         canvas.drawText(
             streak.length.toLong().toString(),
@@ -197,16 +205,20 @@ class MultiStreakChart : View {
     private fun updateMaxMinLengths() {
         maxLength = 0
         minLength = Long.MAX_VALUE
+        val perHabitMax = mutableMapOf<Long, Long>()
         shouldShowLabels = true
         val df = dateFormatter ?: return
         for (cs in streaks!!) {
             val length = cs.streak.length.toLong()
             maxLength = max(maxLength, length)
             minLength = min(minLength, length)
+            val current = perHabitMax[cs.habitKey]
+            perHabitMax[cs.habitKey] = if (current == null) length else max(current, length)
             val lw1 = paint!!.measureText(df.longFormat(cs.streak.start))
             val lw2 = paint!!.measureText(df.longFormat(cs.streak.end))
             maxLabelWidth = max(maxLabelWidth, max(lw1, lw2))
         }
+        maxLengthByHabit = perHabitMax
         if (internalWidth - 2 * maxLabelWidth < internalWidth * 0.25f) {
             maxLabelWidth = 0f
             shouldShowLabels = false
