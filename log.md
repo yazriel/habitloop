@@ -532,3 +532,28 @@ streak (among the rows drawn), not the global max. Bar widths are unchanged
   FULL color but short-width bar, 1 shaded.
 - `MultiStreakWidget.refreshData()` passes `habit.id ?: 0L` as the key.
 - Original `StreakChart.kt` untouched (single-habit already normalizes per habit).
+
+## 14. Session: zero row for unmarked yesterday in MultiStreak widget
+
+If a habit was not marked **yesterday**, the widget now shows a 0 row for it:
+a min-width grey pill labeled `0`, with no side date labels. Today is ignored;
+only yesterday decides.
+
+### Change
+- `MultiStreakWidget.refreshData()`: per habit, `covered = getRecent(5).any
+  { start <= yesterday <= end }` (reuses streak semantics — SKIP/YES count as
+  covered; NO/UNKNOWN/unmet target do not). If not covered, append
+  `ColoredStreak(color, Streak(yesterday, yesterday), habitKey, isZero = true)`;
+  its end=yesterday makes the existing newest-first sort place it just above
+  older streaks (and under a today-ending streak). Real rows and truncation
+  (`maxStreakCount`) unchanged.
+- `ColoredStreak` += `isZero: Boolean = false`.
+- `MultiStreakChart.drawRow()`: effective `length = 0` when `isZero` drives
+  width %, min-bar text, the drawn label (`0`), and shade % (0 → grey via the
+  existing <0.25 band). Replaced the `maxLength == 0L` early-return with a safe
+  `0f` width % so an all-zero widget still draws its pills. Side labels skipped
+  when `isZero`.
+- `updateMaxMinLengths()`: effective length for max/min/per-habit max; zero
+  rows skip date-label width measuring.
+- Edge accepted: a habit created today (no entries before today) also shows a
+  0 row for a yesterday it did not yet exist for.

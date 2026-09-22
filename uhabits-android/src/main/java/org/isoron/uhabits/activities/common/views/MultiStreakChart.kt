@@ -37,7 +37,12 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
 
-data class ColoredStreak(val color: Int, val streak: Streak, val habitKey: Long)
+data class ColoredStreak(
+    val color: Int,
+    val streak: Streak,
+    val habitKey: Long,
+    val isZero: Boolean = false
+)
 
 class MultiStreakChart : View {
     private var paint: Paint? = null
@@ -114,20 +119,20 @@ class MultiStreakChart : View {
     }
 
     private fun drawRow(canvas: Canvas, coloredStreak: ColoredStreak, rect: RectF?) {
-        if (maxLength == 0L) return
         val streak = coloredStreak.streak
-        val widthPercentage = streak.length.toFloat() / maxLength
+        val length = if (coloredStreak.isZero) 0L else streak.length.toLong()
+        val widthPercentage = if (maxLength == 0L) 0f else length.toFloat() / maxLength
         var availableWidth = internalWidth - 2 * maxLabelWidth
         if (shouldShowLabels) availableWidth -= 2 * textMargin
         var barWidth = widthPercentage * availableWidth
-        val minBarWidth = paint!!.measureText(streak.length.toLong().toString()) + em
+        val minBarWidth = paint!!.measureText(length.toString()) + em
         barWidth = max(barWidth, minBarWidth)
         val gap = (internalWidth - barWidth) / 2
         val paddingTopBottom = baseSize * 0.05f
         val habitMax = maxLengthByHabit[coloredStreak.habitKey]
         val shadePercentage =
             if (habitMax != null && habitMax > 0) {
-                streak.length.toFloat() / habitMax
+                length.toFloat() / habitMax
             } else {
                 widthPercentage
             }
@@ -146,12 +151,12 @@ class MultiStreakChart : View {
         paint!!.color = percentageToTextColor(shadePercentage)
         paint!!.textAlign = Paint.Align.CENTER
         canvas.drawText(
-            streak.length.toLong().toString(),
+            length.toString(),
             rect.centerX(),
             yOffset,
             paint!!
         )
-        if (shouldShowLabels) {
+        if (shouldShowLabels && !coloredStreak.isZero) {
             val df = dateFormatter!!
             val startLabel = df.longFormat(streak.start)
             val endLabel = df.longFormat(streak.end)
@@ -209,11 +214,12 @@ class MultiStreakChart : View {
         shouldShowLabels = true
         val df = dateFormatter ?: return
         for (cs in streaks!!) {
-            val length = cs.streak.length.toLong()
+            val length = if (cs.isZero) 0L else cs.streak.length.toLong()
             maxLength = max(maxLength, length)
             minLength = min(minLength, length)
             val current = perHabitMax[cs.habitKey]
             perHabitMax[cs.habitKey] = if (current == null) length else max(current, length)
+            if (cs.isZero) continue
             val lw1 = paint!!.measureText(df.longFormat(cs.streak.start))
             val lw2 = paint!!.measureText(df.longFormat(cs.streak.end))
             maxLabelWidth = max(maxLabelWidth, max(lw1, lw2))
