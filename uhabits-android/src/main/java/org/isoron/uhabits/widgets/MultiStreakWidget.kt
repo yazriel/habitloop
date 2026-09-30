@@ -24,11 +24,13 @@ import android.content.Context
 import android.content.Intent
 import android.view.View
 import org.isoron.platform.gui.toInt
+import org.isoron.platform.time.getToday
 import org.isoron.uhabits.R
 import org.isoron.uhabits.activities.common.views.ColoredStreak
 import org.isoron.uhabits.activities.common.views.MultiStreakChart
 import org.isoron.uhabits.activities.habits.list.ListHabitsActivity
 import org.isoron.uhabits.core.models.Habit
+import org.isoron.uhabits.core.models.Streak
 import org.isoron.uhabits.core.ui.views.WidgetTheme
 import org.isoron.uhabits.widgets.views.GraphWidgetView
 
@@ -59,9 +61,20 @@ class MultiStreakWidget(
         widgetView.setBackgroundAlpha(preferedBackgroundAlpha)
         if (preferedBackgroundAlpha >= 255) widgetView.setShadowAlpha(0x4f)
         val chart = widgetView.dataView as MultiStreakChart
+        val yesterday = getToday().minus(1)
         val merged = habits.flatMap { habit ->
             val color = WidgetTheme().color(habit.color).toInt()
-            habit.streaks.getRecent(5).map { ColoredStreak(color, it, habit.id ?: 0L) }
+            val habitKey = habit.id ?: 0L
+            val recent = habit.streaks.getRecent(5)
+            val rows = recent.map { ColoredStreak(color, it, habitKey) }
+            val covered = recent.any {
+                !it.start.isNewerThan(yesterday) && !it.end.isOlderThan(yesterday)
+            }
+            if (covered) {
+                rows
+            } else {
+                rows + ColoredStreak(color, Streak(yesterday, yesterday), habitKey, isZero = true)
+            }
         }.sortedWith { a, b -> b.streak.compareNewer(a.streak) }
         if (chart.maxStreakCount > 0) {
             chart.setStreaks(merged.take(chart.maxStreakCount))
